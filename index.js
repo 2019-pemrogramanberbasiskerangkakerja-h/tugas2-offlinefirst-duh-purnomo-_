@@ -54,9 +54,9 @@ app.post('/login', urlencodedParser ,function (req, res) {
             console.log('tidak ada koneksi ke db');
             var username = usersdb.find({username:req.body.username});
             var password = usersdb.find({password:req.body.password});
-            console.log("awiw");
-            console.log(username);
-            console.log("awiw");
+            // console.log("awiw");
+            // console.log(username);
+            // console.log("awiw");
             if(username[0]['username']){
                 console.log('====== AUTH USER OFFLINE======');
                 console.log(username[0]['username']);
@@ -74,6 +74,10 @@ app.post('/login', urlencodedParser ,function (req, res) {
             dbo.collection(colName).find(query).toArray(function(err, result) {
             if (err) throw err;
               console.log(result);
+                console.log('====== AUTH USER DB ONELIN======');
+                console.log(result[0]['username']);
+                console.log(result[0]['password']);
+                console.log('====== END AUTH USER DB ONELIN======');              
               if (typeof result !== 'undefined' && result.length > 0) {
                 req.session.user = req.session.username;
                 res.redirect('/sukseslogin');
@@ -97,7 +101,7 @@ app.post('/register', urlencodedParser ,function (req, res) {
     MongoClient.connect(url, function(err, db) {
         if (err){
             console.log('tidak ada keoneksi ke db');
-            usersdb.insert({username:response.username,password:response.password});
+            // usersdb.insert({username:response.username,password:response.password});
         }else{
             var dbo = db.db(dbName);
             var query = { username: response.username, password: response.password };
@@ -128,7 +132,7 @@ function asooy(){
                     let username = result[i]['username'];
                     let password = result[i]['password'];
                     let offlineusername = usersdb.find({username:username});
-                    console.log(offlineusername);
+                    // console.log(offlineusername);
                     if(offlineusername.length < 1){
                         console.log('kosong');
                         usersdb.insert({username:username,password:password});        
@@ -162,6 +166,6 @@ function asooy(){
     });    
 }
 
-var server = app.listen(8000, function () {
-   console.log("server offline di localhost port 8000")
+var server = app.listen(1234, function () {
+   console.log("========== ASHIAAAAP ===========")
 })
