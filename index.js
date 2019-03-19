@@ -57,6 +57,7 @@ app.post('/login', urlencodedParser ,function (req, res) {
             // console.log("awiw");
             // console.log(username);
             // console.log("awiw");
+            if (typeof username !== 'undefined' && username.length > 0) {
             if(username[0]['username']){
                 console.log('====== AUTH USER OFFLINE======');
                 console.log(username[0]['username']);
@@ -65,24 +66,26 @@ app.post('/login', urlencodedParser ,function (req, res) {
                 req.session.user = req.username;
                 res.redirect('/sukseslogin');                            
             }else{
+                console.log('====== DATA TIDAK ADA ======');
                 res.redirect('/');
-            }
+            }}
         }
         else{
             var dbo = db.db(dbName);
             var query = { username : response.username, password:response.password };
             dbo.collection(colName).find(query).toArray(function(err, result) {
             if (err) throw err;
-              console.log(result);
+              if (typeof result !== 'undefined' && result.length > 0) {
+                req.session.user = req.session.username;
+                console.log(result);
                 console.log('====== AUTH USER DB ONELIN======');
                 console.log(result[0]['username']);
                 console.log(result[0]['password']);
-                console.log('====== END AUTH USER DB ONELIN======');              
-              if (typeof result !== 'undefined' && result.length > 0) {
-                req.session.user = req.session.username;
+                console.log('====== END AUTH USER DB ONELIN======');                              
                 res.redirect('/sukseslogin');
               }
               else{
+                console.log('====== DATA TIDAK ADA ======');
                 res.redirect('/');
               }
               db.close();
@@ -101,7 +104,9 @@ app.post('/register', urlencodedParser ,function (req, res) {
     MongoClient.connect(url, function(err, db) {
         if (err){
             console.log('tidak ada keoneksi ke db');
-            // usersdb.insert({username:response.username,password:response.password});
+            //DISABLE REGISTER OFFLINE
+            usersdb.insert({username:response.username,password:response.password});
+            //DISABLE REGISTER OFFLINE
         }else{
             var dbo = db.db(dbName);
             var query = { username: response.username, password: response.password };
@@ -141,30 +146,41 @@ function asooy(){
             db.close();                
             });
 
-            // var dataoffline = usersdb.chain().simplesort('username').data();
-            // for(var j=0; j<dataoffline.length ; j++){
-            //     let username = dataoffline[j]['username'];
-            //     let password = dataoffline[j]['password'];
-            //     var query = { username : username};
-            //     dbo.collection(colName).find(query).toArray(function(err, result) {
-            //         if (err) throw err;
-            //         if (result.length > 0) {
-            //             console.log('data sudah ada');
-            //         }
-            //         else{
-            //             console.log('data belum ada');
-            //             var query = { username: username, password: password };
-            //             dbo.collection(colName).insertOne(query, function(err, res) {
-            //                 if (err) throw err;
-            //                 db.close();
-            //             });
-            //         }
-            //         db.close();
-            //     });
-            // }
+            //DISABLE REGISTER OFFLINE
+            var dataoffline = usersdb.chain().simplesort('username').data();
+            for(var j=0; j<dataoffline.length ; j++){
+                let username = dataoffline[j]['username'];
+                let password = dataoffline[j]['password'];
+                var query = { username : username};
+                var promise1 = new Promise(function(resolve, reject){
+                    resolve(dbo.collection(colName).find(query).toArray());
+                });
+                promise1.then((result) => {
+                    db.close();
+                    if (result.length > 0) {
+                        console.log('data sudah ada');
+                    }
+                    else{
+                        console.log('data belum ada');
+                        var query = { username: username, password: password };
+                        dbo.collection(colName).insertOne(query, function(err, res) {
+                            console.log(err);                            
+                            db.close();
+                        });                            
+                        // atasBawah(query,dbo);
+                    }
+                });
+
+            }
+            
+            //DISABLE REGISTER OFFLINE
         }
     });    
 }
+
+// function atasBawah(query,dbo){
+
+// }
 
 var server = app.listen(1234, function () {
    console.log("========== ASHIAAAAP ===========")
